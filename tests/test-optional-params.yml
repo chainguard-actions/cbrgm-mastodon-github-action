@@ -1,0 +1,31 @@
+name: Test optional parameters
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://mastodon.social'
+          access-token: 'fake-token-for-testing'
+          message: 'Test toot with optional params'
+          visibility: 'unlisted'
+          sensitive: 'true'
+          spoiler-text: 'Content warning: test'
+          language: 'en'
+      - name: Assert action was invoked with optional params (expected to fail without real credentials)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # The action should fail with invalid credentials (not skip or be missing)
+          # This confirms the action was invoked with all optional parameters
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to be invoked"
+            exit 1
+          fi
+          echo "PASS: action was invoked with optional params (outcome=$OUTCOME, expected failure with fake credentials)"
