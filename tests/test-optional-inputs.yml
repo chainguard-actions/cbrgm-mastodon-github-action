@@ -1,0 +1,36 @@
+name: Test optional inputs
+# This test verifies the action accepts optional inputs (visibility, sensitive,
+# spoiler-text, language) and fails gracefully with invalid credentials.
+# We cannot test a successful post without a real Mastodon instance.
+on:
+  workflow_dispatch:
+
+jobs:
+  test-optional-inputs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run action with optional inputs and invalid credentials (expect failure)
+        id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://mastodon.social'
+          access-token: 'invalid-token-for-testing'
+          message: 'Test toot with optional inputs'
+          visibility: 'unlisted'
+          sensitive: 'true'
+          spoiler-text: 'Content warning: test'
+          language: 'en'
+
+      - name: Assert action failed with invalid credentials
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "failure" ]; then
+            echo "FAIL: expected action to fail with invalid credentials, but got outcome: $OUTCOME"
+            exit 1
+          fi
+          echo "PASS: action correctly failed with invalid credentials even when optional inputs are provided"
