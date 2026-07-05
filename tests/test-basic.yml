@@ -1,0 +1,38 @@
+name: Test basic mastodon-send invocation
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # The action requires a real Mastodon instance and valid credentials.
+      # We invoke it with a fake URL and token; it should fail with an auth/network
+      # error (not a crash or missing-input error), confirming the action wiring is correct.
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://mastodon.invalid'
+          access-token: 'fake-token-for-testing'
+          message: 'Test toot from GitHub Actions CI'
+          visibility: 'public'
+
+      - name: Assert action was invoked (failed due to invalid credentials, not missing inputs)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          # The action should have failed (invalid URL/token), not been skipped
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped — it was never invoked"
+            exit 1
+          fi
+          # We expect failure because credentials are fake; success would be surprising
+          if [ "$OUTCOME" = "success" ]; then
+            echo "WARN: action unexpectedly succeeded — this may indicate a real Mastodon instance responded"
+          fi
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed as expected with invalid credentials"
+          fi

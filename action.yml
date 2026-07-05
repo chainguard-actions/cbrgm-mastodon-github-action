@@ -1,0 +1,73 @@
+name: 'mastodon-send'
+description: 'Send toots (messages) to a Mastodon instance from GitHub Actions'
+author: 'cbrgm'
+
+inputs:
+  url:
+    description: 'Mastodon instance URL'
+    required: true
+  access-token:
+    description: 'Mastodon access token for authentication'
+    required: true
+  message:
+    description: 'The content of the toot. Optional if media-paths is provided.'
+    required: false
+  visibility:
+    description: 'Visibility of the toot (public, unlisted, private, direct)'
+    required: false
+    default: 'public'
+  sensitive:
+    description: 'Mark the toot and attached media as sensitive'
+    required: false
+    default: "false"
+  spoiler-text:
+    description: 'Text to be shown as a warning before the actual content'
+    required: false
+  language:
+    description: 'ISO 639 language code for the toot'
+    required: false
+  scheduled-at:
+    description: 'ISO 8601 Datetime to schedule the toot. Must be at least 5 minutes in the future'
+    required: false
+  media-paths:
+    description: 'Comma-separated list of media file paths to attach (max 4). Supported: images, video, audio.'
+    required: false
+  media-descriptions:
+    description: 'Comma-separated list of alt text descriptions for media files. If one value is provided, it applies to all.'
+    required: false
+
+outputs:
+  id:
+    description: 'The id of the toot posted'
+  url:
+    description: 'The url to the toot if present'
+  scheduled_at:
+    description: 'The datetime at which to post the status if present'
+
+runs:
+  using: 'docker'
+  image: 'docker://ghcr.io/cbrgm/mastodon-github-action@sha256:b45d1329abcbea23b961085e7fbed7b2f91034772c9105b9b89c6da695154016' # v2
+  args:
+    - --url
+    - ${{ inputs.url }}
+    - --access-token
+    - ${{ inputs.access-token }}
+    - --message
+    - ${{ inputs.message }}
+    - --visibility
+    - ${{ inputs.visibility }}
+    - --sensitive=${{ inputs.sensitive }}
+    - --spoiler-text
+    - ${{ inputs.spoiler-text }}
+    - --language
+    - ${{ inputs.language }}
+    - --scheduled-at
+    - ${{ inputs.scheduled-at }}
+    - --media-paths
+    - ${{ inputs.media-paths }}
+    - --media-descriptions
+    - ${{ inputs.media-descriptions }}
+
+branding:
+  icon: edit
+  color: blue
