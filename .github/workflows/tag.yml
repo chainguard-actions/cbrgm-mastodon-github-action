@@ -45,8 +45,7 @@ jobs:
           git fetch --tags
           latest_tag=$(git tag | sort -V | tail -n 1)
           echo "current version is: $latest_tag"
-          safe_tag=$(printf '%s' "$latest_tag" | tr -d '\n\r')
-          echo "latest_tag=$safe_tag" >> "$GITHUB_ENV"
+          echo "latest_tag=$latest_tag" >> $GITHUB_ENV
 
       - name: Bump Version
         id: bump-semver
