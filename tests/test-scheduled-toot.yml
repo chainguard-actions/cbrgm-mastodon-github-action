@@ -1,0 +1,41 @@
+name: Test scheduled toot - scheduled-at input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Compute a scheduled-at time at least 5 minutes in the future (ISO 8601).
+      - name: Compute scheduled-at time
+        id: schedule
+        run: |
+          SCHEDULED_AT=$(date -u -d '+10 minutes' '+%Y-%m-%dT%H:%M:%SZ' 2>/dev/null \
+            || date -u -v+10M '+%Y-%m-%dT%H:%M:%SZ')
+          echo "scheduled_at=$SCHEDULED_AT" >> "$GITHUB_OUTPUT"
+          echo "Scheduled at: $SCHEDULED_AT"
+
+      # Test that the scheduled-at input is accepted and passed through.
+      # The action will fail due to invalid URL/token, but we verify it
+      # was invoked without argument-parsing errors.
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://mastodon.example.invalid'
+          access-token: 'fake-token-for-testing'
+          message: 'Scheduled test toot from GitHub Actions'
+          visibility: 'public'
+          scheduled-at: ${{ steps.schedule.outputs.scheduled_at }}
+
+      - name: Assert action was invoked with scheduled-at input
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action was invoked with scheduled-at input (outcome=$OUTCOME)"

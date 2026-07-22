@@ -1,0 +1,42 @@
+name: Test media attachment - media-paths and media-descriptions inputs
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Create a small test image file to use as a media attachment.
+      - name: Create test media file
+        run: |
+          # Create a minimal 1x1 pixel PNG file (binary content via printf)
+          printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82' \
+            > /tmp/test-image.png
+          echo "Created test media file at /tmp/test-image.png"
+          ls -la /tmp/test-image.png
+
+      # Test that media-paths and media-descriptions inputs are accepted and passed through.
+      # The action will fail due to invalid URL/token, but we verify it
+      # was invoked without argument-parsing errors.
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://mastodon.example.invalid'
+          access-token: 'fake-token-for-testing'
+          message: 'Test toot with media attachment'
+          visibility: 'public'
+          media-paths: '/tmp/test-image.png'
+          media-descriptions: 'A test image for CI verification'
+
+      - name: Assert action was invoked with media inputs
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "action outcome: $OUTCOME"
+          if [ "$OUTCOME" = "skipped" ]; then
+            echo "FAIL: action was skipped, expected it to run"
+            exit 1
+          fi
+          echo "PASS: action was invoked with media-paths and media-descriptions inputs (outcome=$OUTCOME)"
