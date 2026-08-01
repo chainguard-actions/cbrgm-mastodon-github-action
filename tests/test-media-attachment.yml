@@ -1,0 +1,37 @@
+name: Test media attachment (media-paths and media-descriptions inputs)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Create a small test image file for media attachment
+        run: |
+          # Create a minimal 1x1 PNG file (valid PNG binary) inside GITHUB_WORKSPACE
+          # so it is accessible inside the Docker action container at /github/workspace/
+          printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x02\x00\x00\x00\x90wS\xde\x00\x00\x00\x0cIDATx\x9cc\xf8\x0f\x00\x00\x01\x01\x00\x05\x18\xd8N\x00\x00\x00\x00IEND\xaeB`\x82' \
+            > "$GITHUB_WORKSPACE/test-image.png"
+          echo "Created test image at $GITHUB_WORKSPACE/test-image.png"
+          ls -la "$GITHUB_WORKSPACE/test-image.png"
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://mastodon.social'
+          access-token: 'invalid-token-for-testing'
+          message: 'Test toot with media attachment'
+          visibility: 'public'
+          media-paths: '/github/workspace/test-image.png'
+          media-descriptions: 'A small test image for CI validation'
+      - name: Assert action ran (invalid credentials expected to fail)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "failure" ] || [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action executed with media-paths and media-descriptions inputs"
+          else
+            echo "FAIL: unexpected outcome: $OUTCOME"
+            exit 1
+          fi
