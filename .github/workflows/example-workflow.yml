@@ -3,15 +3,17 @@ name: Send Mastodon Message
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - name: Send toot to Mastodon
       id: mastodon
-      uses: cbrgm/mastodon-github-action@v2
+      uses: cbrgm/mastodon-github-action@3ecf31935bd0ef42511601e24d8b676da3c1ce13 # main
       with:
         message: "Hello from GitHub Actions!"
-        visibility: "public" # default: public
+        visibility: "private" # default: public
         access-token: ${{ secrets.MASTODON_ACCESS_TOKEN }} # access token
         url: ${{ secrets.MASTODON_URL }} # https://example.social
