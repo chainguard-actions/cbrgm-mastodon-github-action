@@ -40,7 +40,7 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/cbrgm/mastodon-github-action@sha256:b84195e69ab9739b5f4d61013e804a060400a23654768c5c5d75244b5154692c' # v2
+  image: 'docker://ghcr.io/cbrgm/mastodon-github-action:v2@sha256:b45d1329abcbea23b961085e7fbed7b2f91034772c9105b9b89c6da695154016'
   args:
     - --url
     - ${{ inputs.url }}

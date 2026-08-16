@@ -1,0 +1,67 @@
+---
+name: automerge
+
+on: pull_request
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+
+    steps:
+
+      - name: Fetch metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@21025c705c08248db411dc16f3619e6b5f9ea21a # v2.5.0
+        with:
+          github-token: ${{ secrets.BOT_PAT_TOKEN }}
+
+      - name: Approve request
+        id: approve
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr review --approve "$PR_URL"
+
+      - name: Enable automerge
+        id: automerge
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --rebase --auto "$PR_URL"
+
+  renovate:
+    runs-on: ubuntu-latest
+    if: github.actor == 'renovate[bot]' || github.actor == 'mend[bot]'
+
+    steps:
+      - name: Approve request
+        id: approve
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr review --approve "$PR_URL"
+
+      - name: Enable automerge
+        id: automerge
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --rebase --auto "$PR_URL"
+
+  cbrgm:
+    runs-on: ubuntu-latest
+    if: github.actor == 'cbrgm' && contains(github.event.pull_request.labels.*.name, 'auto-merge')
+
+    steps:
+      - name: Enable automerge
+        id: automerge
+        env:
+          GH_TOKEN: ${{ secrets.BOT_PAT_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --rebase --auto "$PR_URL"
+...

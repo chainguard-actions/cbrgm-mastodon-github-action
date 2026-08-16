@@ -1,0 +1,64 @@
+---
+name: go-binaries
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+permissions:
+  contents: write
+
+jobs:
+  binaries:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        id: source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup golang
+        id: golang
+        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6.2.0
+        with:
+          go-version-file: .go-version
+
+      - name: Run generate
+        id: generate
+        run: make generate
+
+      - name: Run release
+        id: release
+        run: make release
+
+      - name: Sign release
+        id: gpgsign
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: cbrgm/pgp-sign-artifact-action@8aa5b853da0cd8e9754216b4a2f8c9ad1937439c # v1
+        with:
+          private_key: ${{ secrets.GNUPG_KEY }}
+          passphrase: ${{ secrets.GNUPG_PASSWORD }}
+          detach_sign: true
+          files: dist/*
+          excludes: dist/*.sha256
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          generate_release_notes: true
+          files: "dist/*"
+          token: ${{ secrets.BOT_PAT_TOKEN }}
+
+      - name: Update version tags
+        uses: cbrgm/semver-tag-sync-action@a8dea5540c3183ed89913d8fb8d40ac05cf8126c # v1
+        if: startsWith(github.ref, 'refs/tags/v')
+
+...
