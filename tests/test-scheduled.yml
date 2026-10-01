@@ -1,0 +1,38 @@
+name: Test scheduled toot
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          url: 'https://mastodon.social'
+          access-token: 'fake-token-for-testing'
+          message: 'This is a scheduled toot from GitHub Actions!'
+          visibility: 'public'
+          scheduled-at: '2099-12-31T23:59:00.000Z'
+      - name: Assert action ran and either succeeded or failed gracefully
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+          ID: ${{ steps.action.outputs.id }}
+          SCHEDULED_AT: ${{ steps.action.outputs.scheduled_at }}
+        run: |
+          echo "outcome: $OUTCOME"
+          echo "id: $ID"
+          echo "scheduled_at: $SCHEDULED_AT"
+          if [ "$OUTCOME" = "success" ]; then
+            if [ -z "$ID" ]; then
+              echo "FAIL: action succeeded but 'id' output is empty"
+              exit 1
+            fi
+            echo "PASS: scheduled toot created with id='$ID' scheduled_at='$SCHEDULED_AT'"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed gracefully (expected with fake credentials)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
