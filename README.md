@@ -15,6 +15,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v2.2.2 | [`v2.2.2`](https://github.com/chainguard-actions/cbrgm-mastodon-github-action/tree/v2.2.2) | [`ac2d8e8`](https://github.com/cbrgm/mastodon-github-action/commit/ac2d8e8c9986a17b824dd12dd9df4ce5fcd813c1) |
 | v2.2.3 | [`v2.2.3`](https://github.com/chainguard-actions/cbrgm-mastodon-github-action/tree/v2.2.3) | [`7fcc365`](https://github.com/cbrgm/mastodon-github-action/commit/7fcc3650150fc062d707eeffb50e8f7a2704fd0f) |
 | v2.2.4 | [`v2.2.4`](https://github.com/chainguard-actions/cbrgm-mastodon-github-action/tree/v2.2.4) | [`9ba8763`](https://github.com/cbrgm/mastodon-github-action/commit/9ba8763f1daa436d73fb76abbc3e8b2ac8dfa943) |
+| v2.2.5 | [`v2.2.5`](https://github.com/chainguard-actions/cbrgm-mastodon-github-action/tree/v2.2.5) | [`5939c6e`](https://github.com/cbrgm/mastodon-github-action/commit/5939c6e084a12d79415a1e7637a6dbf6de241ab1) |
 
 ## Privacy
 
